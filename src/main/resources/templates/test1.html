@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Tu van nghe nghiep</title>
+	<!-- <link rel="stylesheet" href="{{ asset('style.css') }}"> -->
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+
+	<style>
+		body {
+			font-family: Garamond;
+			/*font-family: monospace;*/
+		}
+
+		h1 {
+			color: black;
+			margin-bottom: 0;
+			margin-top: 0;
+			text-align: center;
+			font-size: 40px;
+		}
+
+		h3 {
+			color: black;
+			font-size: 20px;
+			margin-top: 3px;
+			text-align: center;
+		}
+
+		#chatbox {
+			margin-left: auto;
+			margin-right: auto;
+			width: 40%;
+			margin-top: 60px;
+		}
+
+		#userInput {
+			margin-left: auto;
+			margin-right: auto;
+			width: 40%;
+			margin-top: 60px;
+		}
+
+		#textInput {
+			width: 100%;
+			/*border: 3px solid #009688;*/
+			/*border-bottom: 3px solid #009688;*/
+			font-family: monospace;
+			font-size: 17px;
+		}
+
+		#buttonInput {
+			padding: 3px;
+			font-family: monospace;
+			font-size: 17px;
+		}
+
+		button {
+			background: powderblue;
+			height: auto;
+			width: 100%;
+			text-align: center;
+			border-radius: 10px;
+			color: black;
+
+			padding: 5px;
+		}
+
+		.userText {
+			color: white;
+			font-family: monospace;
+			font-size: 17px;
+			text-align: right;
+			line-height: 30px;
+		}
+
+		.userText span {
+			background-color: deepskyblue;
+			padding: 10px;
+			border-radius: 20px;
+		}
+
+		.botText {
+			color: black;
+			/*
+			width: 70%;
+			background-color: lightgrey;
+			border-radius: 20px;
+			padding: 10px;
+			*/
+
+			font-family: monospace;
+			font-size: 17px;
+			text-align: left;
+			line-height: 30px;
+		}
+
+		.botText span {
+			background-color: lightgrey;
+			padding: 10px;
+			border-radius: 20px;
+		}
+
+		#tidbit {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			width: 300px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Tư vấn nghề nghiệp</h1>
+	<div>
+		<div id="chatbox">
+			<p class="botText">
+				<span>Ban can gi? Ban can gi? Ban can gi? Ban can gi? Ban can gi?<br> Ban can gi? Ban can gi? Ban can gi? Ban can gi? Ban can gi?</span>
+			</p>
+		</div>
+		<div id="userInput">
+			<div id="textInput">
+				<!--
+				<button type="button" id="p01" th:text="'Kich Ban 1'" onclick="executeType1()"></button><br>
+				<button type="button" id="p02" th:text="'Kich Ban 2'"></button><br>
+				-->
+			</div>
+		</div>
+
+		<script>
+			function Result(name, kq) {
+				this.name = name;
+				this.kq = kq;
+			}
+
+			var dsCauHoi = [];
+			var ketQua = [];
+			// getCauHoi();
+
+			// Lay toan bo cau hoi tu server
+			function getCauHoi() {
+				var url = '/question';
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", url, true);
+				xhr.setRequestHeader("Content-Type", "application/json");
+				// xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+				// xhr.setRequestHeader("charset", "utf-8");
+				xhr.send();
+
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState === 4 && xhr.status === 200) {
+						// console.log(JSON.parse(this.responseText));
+						dsCauHoi = JSON.parse(this.responseText);
+						// console.log(kichBan_list);
+						start();
+					}
+				}
+			}
+
+			// Bat dau chay
+			function start() {
+				showBotText("Bạn cần gì?");
+
+				// tao button "Tu van nghe nghiep"
+				var para2 = document.createElement('div');
+				para2.id = 'textInput';
+				var btn = document.createElement('button');
+				btn.innerHTML = "Tư vấn hướng nghiệp";
+				btn.id = 'start';
+				btn.addEventListener("click", function () {
+					execution();
+				})
+				btn.addEventListener("mouseover", function () {
+					btn.style.background = "deepskyblue";
+				})
+				btn.addEventListener("mouseout", function () {
+					btn.style.background = "powderblue";
+				})
+				para2.appendChild(btn);
+				para2.appendChild(document.createElement('br'));
+
+				parent = document.getElementById('userInput');
+				parent.replaceChildren(para2);
+			}
+
+			function showBotText(question) {
+				var para = document.createElement('p');
+				var para2 = document.createElement('span');
+				para2.innerHTML = question;
+				para.appendChild(para2);
+				para.className = 'botText';
+
+				var parent = document.getElementById('chatbox');
+				parent.appendChild(para);
+			}
+
+			function execution(stt) {
+				showResponse(document.getElementById('start').innerHTML);
+				// question_list = kichBan_list[stt].questions;
+				askQuestion(0, dsCauHoi.length);
+				// console.log(kichBan_list);
+			}
+
+			function showResponse(response) {
+				var para = document.createElement('p');
+				var para2 = document.createElement('span');
+				para2.innerHTML = response;
+				para.appendChild(para2);
+				para.className = 'userText';
+
+				var parent = document.getElementById('chatbox');
+				parent.appendChild(para);
+				// document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+			}
+
+			function askQuestion(cur, len) {
+				// console.log(dsCauHoi[cur]);
+				showBotText(dsCauHoi[cur].moTa);
+				showLuaChon(dsCauHoi[cur].dsLuaChon);
+				// addChangeBtnColor();
+				confirm(cur, len);
+			}
+
+			function showLuaChon(dsLuaChon) {
+				var para = document.createElement('div');
+				para.id = 'textInput';
+				for (let i = 0; i < dsLuaChon.length; ++i) {
+					para.appendChild(createLuaChon(dsLuaChon[i]));
+					para.append(document.createElement('br'));
+				}
+
+				var parent = document.getElementById('userInput');
+				var child = document.getElementById('textInput');
+
+				parent.replaceChild(para, child);
+			}
+
+			function createLuaChon(choice) {
+				var btn = document.createElement('button');
+				btn.id = choice.id;
+				btn.className = "unchosen";
+				btn.innerHTML = choice.moTa;
+				btn.addEventListener("click", function () {
+					//console.log(btn);
+					if (btn.className == "unchosen") {
+						btn.style.background = "deepskyblue";
+						btn.className = "chosen";
+					}
+					else {
+						btn.style.background = "powderblue";
+						btn.className = "unchosen";
+					}
+				});
+				btn.addEventListener("mouseover", function () {
+					if (btn.className == "unchosen") {
+						btn.style.background = "deepskyblue";
+					}
+				})
+				btn.addEventListener("mouseout", function () {
+					if (btn.className == "unchosen") {
+						btn.style.background = "powderblue";
+					}
+				})
+				return btn;
+			}
+
+			function confirm(cur, len) {
+				var btn = document.createElement('button');
+				btn.id = "confirm";
+				btn.innerHTML = "Tiếp tục";
+				btn.addEventListener("click", function () {
+					response(cur, len);
+				});
+				btn.addEventListener("mouseover", function () {
+					btn.style.background = "greenyellow";
+				})
+				btn.addEventListener("mouseout", function () {
+					btn.style.background = "springgreen";
+				})
+
+				var parent = document.getElementById("textInput");
+				parent.appendChild(btn);
+
+				document.getElementById(btn.id).style.background = "springgreen";
+			}
+
+			function response(cur, len) {
+				var x = calculate(cur);
+				ketQua.push(x);
+				showResponse(dsCauHoi[cur].loai + " = " + x.kq);
+				if (cur < len - 1) {
+					askQuestion(cur + 1, len);
+				}
+				else {
+					console.log(ketQua);
+					sendJSON(ketQua);
+				}
+			}
+
+			function calculate(cur) {
+				var dsLuaChon = dsCauHoi[cur].dsLuaChon;
+				var id = dsCauHoi[cur].id;
+				var sum = 0;
+				var len = dsLuaChon.length;
+				for (let i = 0; i < len; ++i) {
+					x = document.getElementById(dsLuaChon[i].id);
+					if (x.className == "chosen") {
+						sum += dsLuaChon[i].chon;
+					}
+					else {
+						sum += dsLuaChon[i].khongChon;
+					}
+				}
+				return new Result(dsCauHoi[cur].id, sum);
+			}
+
+			function sendJSON(object) {
+				var url = '/answer';
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", url, true);
+				xhr.setRequestHeader("Content-Type", "application/json");
+				var data = JSON.stringify(object);
+				xhr.send(data);
+
+				var answer = "";
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState === 4 && xhr.status === 200) {
+						answer = this.responseText
+						showResult(answer);
+					}
+				}
+			}
+
+			function showResult(json) {
+				var answer_list = JSON.parse(json);
+				console.log(answer_list);
+
+				var text = "";
+
+				if (answer_list.length == 0) {
+					text = "Không đủ thông tin."
+				}
+				else {
+					text = "Nghề nghiệp phù hợp:<br>";
+					for (let i = 0; i < answer_list.length; ++i) {
+						var answer = answer_list[i];
+						text += getDetailOfAnswer(answer);
+					}
+				}
+
+				showBotText(text);
+
+				ketQua = [];
+				start();
+			}
+
+			function getDetailOfAnswer(answer) {
+				var text = "&nbsp;&nbsp;" + "Mã Holland: " + answer.hollandCode + "<br>";
+				if ((answer.lvl1.length + answer.lvl2.length + answer.lvl3.length + answer.lvl4.length + answer.lvl5.length) == 0) {
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;" + "Không tìm thấy nghề trong CSDL, thành thật xin lỗi.<br>"
+				}
+				else {
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;" + "Cần ít hoặc không cần đào tạo:<br>";
+					text += getJobList(answer.lvl1);
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;" + "Cần đào tạo tối thiểu:<br>";
+					text += getJobList(answer.lvl2);
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;" + "Cần đào tạo trình độ trung bình:<br>";
+					text += getJobList(answer.lvl3);
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;" + "Cần đào tạo tương đối:<br>";
+					text += getJobList(answer.lvl4);
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;" + "Cần đào tạo trình độ cao:<br>";
+					text += getJobList(answer.lvl5);
+				}
+				return text;
+			}
+
+			function getJobList(job_list) {
+				var text = "";
+				for (let i = 0; i < job_list.length; ++i) {
+					text += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + job_list[i].ten + "<br>";
+				}
+				return text;
+			}
+
+		</script>
+	</div>
+</body>
+
+</html>
